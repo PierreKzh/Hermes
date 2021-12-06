@@ -9,6 +9,8 @@ class main
         server server1 = new server();
         server.StartServer();
         //client.StartClient();*/
+        Console.WriteLine("test");
+        Console.ReadKey();
         return 0;
     }
 }
