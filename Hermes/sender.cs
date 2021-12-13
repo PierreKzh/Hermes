@@ -29,7 +29,7 @@ namespace sender
             This function, create an end point to connect to this.
             Then try to connect to the server and send data.
             */
-            byte[] bytes = new byte[1024];
+            //byte[] buffer = new byte[1024];
             try
             {
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
@@ -40,7 +40,7 @@ namespace sender
                 {
                     sender.Connect(remoteEP);
                     Console.WriteLine("Socket connected to {0}", sender.RemoteEndPoint.ToString());
-                    byte[] msg = Encoding.ASCII.GetBytes(message);
+                    byte[] msg = Encoding.UTF8.GetBytes(message);
                     int bytesSent = sender.Send(msg);
                     /*
                     // Receive the response from the remote device.  

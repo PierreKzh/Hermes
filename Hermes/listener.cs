@@ -1,8 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace listener
 {
@@ -24,7 +24,7 @@ namespace listener
          * @remark      
          * @copyright   
          */
-        public static void StartServer(string ip, int port)
+public static void StartServer(string ip, int port)
         {
             /**
              * @brief           Listening for client connection
@@ -38,21 +38,21 @@ namespace listener
             {
                 IPAddress ipAddress = IPAddress.Parse(ip);
                 server = new TcpListener(ipAddress, port);
-                Byte[] bytes = new Byte[256];
+                Byte[] buffer = new Byte[1024];
                 String data = null;
-                server.Start();
                 while (true)
                 {
-                    Console.Write("Waiting for a connection... ");
+                    server.Start();
+                    //Console.Write("Waiting for a connection... ");
                     TcpClient client = server.AcceptTcpClient();
-                    Console.WriteLine("Connected!");
+                    Console.WriteLine("\nConnected!");
                     data = null;
                     NetworkStream stream = client.GetStream();
                     int i;
-                    while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                    while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
                     {
-                        data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                        Console.WriteLine("Received: {0}", data);
+                        data = Encoding.UTF8.GetString(buffer, 0, i);
+                        Console.WriteLine("Received: {0}\n", data);
                         /*data = data.ToUpper();
                         byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
                         // Send back a response.
@@ -60,6 +60,7 @@ namespace listener
                         Console.WriteLine("Sent: {0}", data);*/
                     }
                     client.Close();
+                    Thread.Sleep(500);
                 }
             }
             catch (SocketException e)
@@ -72,6 +73,7 @@ namespace listener
             }
             Console.WriteLine("\nHit enter to continue...");
             Console.Read();
+            Thread.Sleep(500);
         }
     }
 }

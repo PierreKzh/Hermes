@@ -1,6 +1,8 @@
 ﻿using System;
 using listener;
 using sender;
+using System.Threading;
+using System.Text;
 class main
 {
     /**
@@ -17,10 +19,28 @@ class main
      */
     public static int Main(String[] args)
     {
+        Console.OutputEncoding = Encoding.Unicode;
+        string message;
+        string ip;
         client client1 = new client();
-        server server1 = new server();
-        server.StartServer("127.0.0.1", 11000);
-        client.StartClient("127.0.0.1", 11000, "test message");
+        Thread threadListener = new Thread(() => server.StartServer("0.0.0.0", 11000));
+        threadListener.Start();
+        Console.WriteLine("Adresse IP de destination : ");
+        ip = Console.ReadLine();
+        while (true)
+        {
+            try
+            {
+                Console.WriteLine("Envoyer un méssage : ");
+                message = Console.ReadLine();
+                client.StartClient(ip, 11000, message);
+            }
+            catch (OverflowException e)
+            {
+                Console.WriteLine("{0} Value read = {1}.", e.Message);
+            }
+            Thread.Sleep(200);
+        }
         return 0;
     }
 }

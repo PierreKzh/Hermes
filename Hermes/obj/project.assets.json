@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Pierre\\Documents\\BSI-2021-2022\\PA\\Hermes\\Hermes\\Hermes.csproj",
+      "projectUniqueName": "C:\\Users\\Pierre\\Documents\\BSI-2021-2022\\PA\\projetAnnuel\\Hermes\\Hermes.csproj",
       "projectName": "Hermes",
-      "projectPath": "C:\\Users\\Pierre\\Documents\\BSI-2021-2022\\PA\\Hermes\\Hermes\\Hermes.csproj",
+      "projectPath": "C:\\Users\\Pierre\\Documents\\BSI-2021-2022\\PA\\projetAnnuel\\Hermes\\Hermes.csproj",
       "packagesPath": "C:\\Users\\Pierre\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Pierre\\Documents\\BSI-2021-2022\\PA\\Hermes\\Hermes\\obj\\",
+      "outputPath": "C:\\Users\\Pierre\\Documents\\BSI-2021-2022\\PA\\projetAnnuel\\Hermes\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Pierre\\AppData\\Roaming\\NuGet\\NuGet.Config",
