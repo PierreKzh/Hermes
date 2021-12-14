@@ -1,19 +1,18 @@
-\page page_README README
+<img src="https://zupimages.net/up/21/49/g6gx.png" alt="Logo_Hermes" width="100" align="right"/>
+<!--https://www.zupimages.net-->
 
-[TOC]
-
-# Projet {#projet}
+# Projet
 Hermes
 
-## Présentation {#presentation}
+## Présentation
 Hermès is a secure messaging on computer.
 Designed for do not keeping any datas from is user.
 
-## Recette {#recette}
+<!--## Recette-->
 
-## Informations {#informations}
+## Informations
 
 \author Kerzerho Pierre <<kerzerho.pierre13@gmail.com>>
-\author Fave Jean-Baptiste <<>>
+\author Fave Jean-Baptiste <<jb21.fave@gmail.com>>
 \date 2021
 \version 0.1
