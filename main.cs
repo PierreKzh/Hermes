@@ -1,9 +1,12 @@
 ﻿using System;
-using listener;
-using sender;
 using System.Threading;
 using System.Text;
-class main
+using listener;
+using sender;
+using contactStruct;
+using fileConfiguration;
+using application;
+class Source
 {
     /**
      * @file main.cs
@@ -19,11 +22,25 @@ class main
      */
     public static int Main(String[] args)
     {
+        DataFile dataFile = Program.StartUp();
+
+        //=========test struct contact====================
+        dataFile = dataFile.ReadFile();
+        dataFile.contacts.Add(new Contact() { Username = "contact1", IpAddress = "ip1" });
+        dataFile.contacts.Add(new Contact() { Username = "contact2", IpAddress = "ip2" });
+        dataFile.contacts.Add(new Contact() { Username = "contact3", IpAddress = "ip3" });
+        dataFile.contacts.RemoveAt(0);
+        for (int i = 0; i < dataFile.contacts.Count; i++)
+        {
+            Console.WriteLine($"{i}.{dataFile.contacts[i].Username}");
+        }
+        dataFile.WriteFile();
+
+        //=========server & client=======================
         Console.OutputEncoding = Encoding.Unicode;
         string message;
         string ip;
-        client client1 = new client();
-        Thread threadListener = new Thread(() => server.StartServer("0.0.0.0", 11000));
+        Thread threadListener = new Thread(() => Server.Start("0.0.0.0", 11000));
         threadListener.Start();
         Console.WriteLine("Adresse IP de destination : ");
         ip = Console.ReadLine();
@@ -33,7 +50,7 @@ class main
             {
                 Console.WriteLine("Envoyer un méssage : ");
                 message = Console.ReadLine();
-                client.StartClient(ip, 11000, message);
+                Client.Start(ip, 11000, message);
             }
             catch (OverflowException e)
             {

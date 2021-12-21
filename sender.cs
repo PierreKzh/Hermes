@@ -5,12 +5,12 @@ using System.Text;
 
 namespace sender
 {
-    public class client
+    public class Client
     {
         /**
          * @file        sender.cs
-         * @class       sender "sender.cs"
-         * @brief       declaration of class sender
+         * @class       Client "sender.cs"
+         * @brief       declaration of class Client
          * @details     Used for sending data to a server
          * @version     0.1
          * @date        2021
@@ -23,13 +23,14 @@ namespace sender
          * @remark      
          * @copyright   
          */
-        public static void StartClient(string ip, int port, string message)
+        public static void Start(string ip, int port, string message)
         {
-            /*
-            This function, create an end point to connect to this.
-            Then try to connect to the server and send data.
-            */
-            //byte[] buffer = new byte[1024];
+            /**
+             * @brief       Open a socket and send message to a server
+             * @param       ip :        ip address of listening
+             * @param       port :      port of listening  
+             * @param       message :   message to send
+             */
             try
             {
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());

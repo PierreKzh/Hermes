@@ -6,12 +6,12 @@ using System.Threading;
 
 namespace listener
 {
-    class server
+    class Server
     {
         /**
          * @file        listener.cs
-         * @class       server "server.cs"
-         * @brief       declaration of class server
+         * @class       Server "server.cs"
+         * @brief       declaration of class Server
          * @details     Used for listening any clients who would like to connect
          * @version     0.1
          * @date        2021
@@ -24,14 +24,12 @@ namespace listener
          * @remark      
          * @copyright   
          */
-public static void StartServer(string ip, int port)
+        public static void Start(string ip, int port)
         {
             /**
-             * @brief           Listening for client connection
-             * @param[in]       ip  ip address of listening
-             * @param[in]       port  port of listening
-             * @param[out]      
-             * @param[in,out]   
+             * @brief       Listening for client connection
+             * @param       ip :    ip address of listening
+             * @param       port :  port of listening     
              */
             TcpListener server = null;
             try
