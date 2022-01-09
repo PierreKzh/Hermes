@@ -9,7 +9,6 @@ namespace fileConfiguration
     {
         public DataFile()
         {
-            WriteFile();
         }
         private static string file = "HermesData.data";
         public List<Contact> contacts = new List<Contact>();
@@ -18,7 +17,7 @@ namespace fileConfiguration
             /**
              * @brief   write the content of DataFIle in a file
              */
-            System.IO.Stream stream = System.IO.File.Open(DataFile.file, System.IO.FileMode.Create);
+            System.IO.Stream stream = System.IO.File.Open(DataFile.file, System.IO.FileMode.OpenOrCreate);
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
             binaryFormatter.Serialize(stream, this.MemberwiseClone());
             stream.Close();

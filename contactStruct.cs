@@ -26,4 +26,5 @@ namespace contactStruct
         public string Username;
         public string IpAddress;
     }
+
 }

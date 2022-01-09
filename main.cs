@@ -5,7 +5,8 @@ using listener;
 using sender;
 using contactStruct;
 using fileConfiguration;
-using application;
+using consoleApp;
+
 class Source
 {
     /**
@@ -22,21 +23,17 @@ class Source
      */
     public static int Main(String[] args)
     {
-        DataFile dataFile = Program.StartUp();
-
-        //=========test struct contact====================
+        DataFile dataFile = new DataFile();
         dataFile = dataFile.ReadFile();
-        dataFile.contacts.Add(new Contact() { Username = "contact1", IpAddress = "ip1" });
-        dataFile.contacts.Add(new Contact() { Username = "contact2", IpAddress = "ip2" });
-        dataFile.contacts.Add(new Contact() { Username = "contact3", IpAddress = "ip3" });
+        //=========test struct contact====================
+        /*dataFile = dataFile.ReadFile();
+        dataFile.contacts.Add(new Contact() { Username = "Jean", IpAddress = "80.120.250.4" });
+        dataFile.contacts.Add(new Contact() { Username = "Adrien", IpAddress = "140.225.30.15" });
+        dataFile.contacts.Add(new Contact() { Username = "Roger", IpAddress = "220.14.100.55" });
         dataFile.contacts.RemoveAt(0);
-        for (int i = 0; i < dataFile.contacts.Count; i++)
-        {
-            Console.WriteLine($"{i}.{dataFile.contacts[i].Username}");
-        }
-        dataFile.WriteFile();
+        dataFile.WriteFile();*/
 
-        //=========server & client=======================
+        /*//=========server & client=======================
         Console.OutputEncoding = Encoding.Unicode;
         string message;
         string ip;
@@ -57,7 +54,34 @@ class Source
                 Console.WriteLine("{0} Value read = {1}.", e.Message);
             }
             Thread.Sleep(200);
-        }
+        }*/
+
+        //==================== Menu =======================
+        Menu menu = new Menu();
+        string asciiArt = @"
+           ##############(         
+       *#####,         ######      
+     #%%/                  ####(   
+       #%%/                  ####  
+  ...    #%%(                  ### 
+    ...    #%%(                ####
+ ,    ...    #%%(              .###
+  ##    ...    #%%(            ####
+  ,###    ...    #%%(          ### 
+    ,###    ...    #    __  ____________  __  ______________
+      ,###    ...      / / / / ____/ __ \/  |/  / ____/ ___/
+        ,###    .     / /_/ / __/ / /_/ / /|_/ / __/  \__ \ 
+          .### ,     / __  / /___/ _, _/ /  / / /___ ___/ / 
+             #######/_/ /_/_____/_/ |_/_/  /_/_____//____/  
+";
+        Console.WriteLine(asciiArt);
+        Console.WriteLine("Welcome to hermes secure messaging");
+        Console.WriteLine("Press any key to continue ...");
+        Console.ReadKey();
+
+        menu.dataFile = dataFile;
+        menu.FirstMenu();
+        menu.Start();
         return 0;
     }
 }
