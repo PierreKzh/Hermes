@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
-using System.Text;
-using listener;
-using sender;
-using contactStruct;
 using fileConfiguration;
 using consoleApp;
+using hostConnection;
+using appTools;
 
 class Source
 {
@@ -16,70 +15,76 @@ class Source
      * @details 
      * @author Pierre Kerzerho <kerzerho.pierre13@gmail.com>
      * @author 
-     * @version 0.1
-     *
-     * @return int
      *
      */
     public static int Main(String[] args)
     {
-        DataFile dataFile = new DataFile();
-        dataFile = dataFile.ReadFile();
-        //=========test struct contact====================
-        /*dataFile = dataFile.ReadFile();
-        dataFile.contacts.Add(new Contact() { Username = "Jean", IpAddress = "80.120.250.4" });
-        dataFile.contacts.Add(new Contact() { Username = "Adrien", IpAddress = "140.225.30.15" });
-        dataFile.contacts.Add(new Contact() { Username = "Roger", IpAddress = "220.14.100.55" });
-        dataFile.contacts.RemoveAt(0);
-        dataFile.WriteFile();*/
-
-        /*//=========server & client=======================
-        Console.OutputEncoding = Encoding.Unicode;
-        string message;
-        string ip;
-        Thread threadListener = new Thread(() => Server.Start("0.0.0.0", 11000));
-        threadListener.Start();
-        Console.WriteLine("Adresse IP de destination : ");
-        ip = Console.ReadLine();
-        while (true)
-        {
-            try
+        /**
+        * @brief   First display the logo of the game.
+        * @brief   Then after press an input the function initialized a menu and display it.
+        * @return  DataFile :  The DataFile read in a file
+        */
+        List<Title> asciiArt = new List<Title>
             {
-                Console.WriteLine("Envoyer un méssage : ");
-                message = Console.ReadLine();
-                Client.Start(ip, 11000, message);
-            }
-            catch (OverflowException e)
-            {
-                Console.WriteLine("{0} Value read = {1}.", e.Message);
-            }
-            Thread.Sleep(200);
-        }*/
-
-        //==================== Menu =======================
-        Menu menu = new Menu();
-        string asciiArt = @"
-           ##############(         
-       *#####,         ######      
-     #%%/                  ####(   
-       #%%/                  ####  
-  ...    #%%(                  ### 
-    ...    #%%(                ####
- ,    ...    #%%(              .###
-  ##    ...    #%%(            ####
-  ,###    ...    #%%(          ### 
-    ,###    ...    #    __  ____________  __  ______________
-      ,###    ...      / / / / ____/ __ \/  |/  / ____/ ___/
-        ,###    .     / /_/ / __/ / /_/ / /|_/ / __/  \__ \ 
-          .### ,     / __  / /___/ _, _/ /  / / /___ ___/ / 
-             #######/_/ /_/_____/_/ |_/_/  /_/_____//____/  
-";
-        Console.WriteLine(asciiArt);
+                new Title { Text="           ##############(         \n       *#####,         ######      \n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="     #%%/", TextColor = ConsoleColor.Red },
+                new Title { Text="                  ####(   \n", TextColor = ConsoleColor.DarkBlue},
+                new Title { Text="       #%%/", TextColor = ConsoleColor.Red },
+                new Title { Text="                  ####  \n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="  ...", TextColor = ConsoleColor.White },
+                new Title { Text="    #%%(", TextColor = ConsoleColor.Red },
+                new Title { Text="                  ### \n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="    ...", TextColor = ConsoleColor.White },
+                new Title { Text="    #%%(", TextColor = ConsoleColor.Red },
+                new Title { Text="                ####\n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text=" ,", TextColor = ConsoleColor.Blue },
+                new Title { Text="    ...", TextColor = ConsoleColor.White },
+                new Title { Text="    #%%(", TextColor = ConsoleColor.Red },
+                new Title { Text="              .###\n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="  ##", TextColor = ConsoleColor.Blue },
+                new Title { Text="    ...", TextColor = ConsoleColor.White },
+                new Title { Text="    #%%(", TextColor = ConsoleColor.Red },
+                new Title { Text="            ####\n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="  ,###", TextColor = ConsoleColor.Blue },
+                new Title { Text="    ...", TextColor = ConsoleColor.White },
+                new Title { Text="    #%%(", TextColor = ConsoleColor.Red },
+                new Title { Text="          ### \n", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="    ,###", TextColor = ConsoleColor.Blue },
+                new Title { Text="    ...", TextColor = ConsoleColor.White },
+                new Title { Text="    #", TextColor = ConsoleColor.Red },
+                new Title { Text="    __  ____________  __  ______________\n", TextColor = ConsoleColor.Gray },
+                new Title { Text="      ,###", TextColor = ConsoleColor.Blue },
+                new Title { Text="    ...", TextColor = ConsoleColor.White },
+                new Title { Text="      / / / / ____/ __ \\/  |/  / ____/ ___/\n", TextColor = ConsoleColor.Gray },
+                new Title { Text="        ,###", TextColor = ConsoleColor.Blue },
+                new Title { Text="    .", TextColor = ConsoleColor.White },
+                new Title { Text="     / /_/ / __/ / /_/ / /|_/ / __/  \\__ \\ \n", TextColor = ConsoleColor.Gray },
+                new Title { Text="          .###", TextColor = ConsoleColor.Blue },
+                new Title { Text=" ,", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="     / __  / /___/ _, _/ /  / / /___ ___/ / \n", TextColor = ConsoleColor.Gray },
+                new Title { Text="             #######", TextColor = ConsoleColor.DarkBlue },
+                new Title { Text="/_/ /_/_____/_/ |_/_/  /_/_____//____/  \n\n", TextColor = ConsoleColor.Gray },
+            };
+        Tool.WriteTitle(asciiArt);
+        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Welcome to hermes secure messaging");
+        Console.ForegroundColor = ConsoleColor.Gray;
+        Console.WriteLine("\nContact : MailAddress            WebSite : SiteAddress\n");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine("Press any key to continue ...");
         Console.ReadKey();
 
-        menu.dataFile = dataFile;
+        Menu menu = new Menu();
+        menu.threadListener = new Thread(() => Server.Start("0.0.0.0", 11000));
+        menu.threadListener.Start();
+        menu.dataFile = new DataFile();
+        menu.dataFile = menu.dataFile.ReadFile();
+        menu.titleMenu = new List<Title>
+            {
+                new Title { Text="Hermes ", TextColor = ConsoleColor.Blue },
+                new Title { Text="Secure ", TextColor = ConsoleColor.White },
+                new Title { Text="Messaging", TextColor = ConsoleColor.Red }
+            };
         menu.FirstMenu();
         menu.Start();
         return 0;

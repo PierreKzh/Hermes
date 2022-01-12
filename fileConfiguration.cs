@@ -7,6 +7,15 @@ namespace fileConfiguration
     [Serializable]
     public class DataFile
     {
+        /**
+     * @file        fileConfiguration.cs
+     * @class       DataFile "fileConfiguration.cs"
+     * @brief       declaration of a Datafile
+     * @details     Used for create a file to back up each datas
+     * @bug         
+     * @warning     
+     * @remark      
+     */
         public DataFile()
         {
         }
