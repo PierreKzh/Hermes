@@ -88,7 +88,7 @@ namespace consoleApp
             * @brief    And place the cursor when the option is choice.
             * @param    index :  index of tha option choice.
             */
-            dataFile.WriteFile();
+            DataFile.WriteFile(dataFile);
             Console.ResetColor();
             Tool.WriteTitle(titleMenu);
             Console.Write("\n\n");

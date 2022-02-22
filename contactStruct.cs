@@ -2,10 +2,11 @@
 using System.Text.RegularExpressions;
 using fileConfiguration;
 using appTools;
+using Newtonsoft.Json;
 
 namespace contactStruct
 {
-    [Serializable]
+    [JsonObject(MemberSerialization.OptOut)]
     public class Contact
     {
         /**
@@ -56,7 +57,7 @@ namespace contactStruct
                             else
                             {
                                 dataFile.contacts.Add(new Contact() { Username = name, IpAddress = ipAddress });
-                                dataFile.WriteFile();
+                                DataFile.WriteFile(dataFile);
                             }
                         }
                     } while (!Regex.IsMatch(ipAddress, ipRegex) && cki.Key != ConsoleKey.Escape);
