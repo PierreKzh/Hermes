@@ -693,7 +693,6 @@ class Ui_newConnexion(object):
             self.label_event.setStyleSheet("color: red")
             self.label_event.setText("Passwords aren't the same")
 
-
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

@@ -93,4 +93,3 @@ def toPasswordEncode(password):
     """
     key = toSHA(saltEncrypt+password)[:16]
     return key
-
