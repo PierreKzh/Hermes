@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>880</width>
-    <height>609</height>
+    <width>1273</width>
+    <height>793</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -243,14 +243,15 @@
              <item>
               <widget class="QStackedWidget" name="stackedWidget">
                <property name="currentIndex">
-                <number>0</number>
+                <number>1</number>
                </property>
                <widget class="QWidget" name="page_ListContact">
                 <layout class="QVBoxLayout" name="verticalLayout_6">
                  <item>
                   <widget class="QLineEdit" name="lineEdit_Research">
                    <property name="styleSheet">
-                    <string notr="true">background-color: rgb(153, 155, 255);</string>
+                    <string notr="true">background-color: rgb(153, 155, 255);
+color: rgb(255, 255, 255);</string>
                    </property>
                    <property name="placeholderText">
                     <string>Research</string>
@@ -282,22 +283,13 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QLineEdit" name="lineEdit_Username"/>
-                 </item>
-                 <item row="2" column="1">
-                  <spacer name="verticalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
+                  <widget class="QLineEdit" name="lineEdit_Username">
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(255, 255, 255);</string>
                    </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
+                  </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="2" column="0">
                   <widget class="QLabel" name="label_IPaddress">
                    <property name="styleSheet">
                     <string notr="true">color: rgb(255, 255, 255);</string>
@@ -307,10 +299,24 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="lineEdit_IPaddress"/>
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="lineEdit_IPaddress">
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(255, 255, 255);</string>
+                   </property>
+                  </widget>
                  </item>
-                 <item row="5" column="0" colspan="2">
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QLabel" name="label_IPaddressEvent">
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(255, 0, 0);</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0" colspan="2">
                   <widget class="QPushButton" name="pushButton_Add">
                    <property name="styleSheet">
                     <string notr="true">background-color: #404EED;</string>
@@ -319,19 +325,6 @@
                     <string>Add</string>
                    </property>
                   </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <spacer name="verticalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
                  </item>
                 </layout>
                </widget>
@@ -395,7 +388,7 @@
           <item>
            <widget class="QStackedWidget" name="stackedWidget_2">
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="page_message">
              <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -457,8 +450,15 @@
                  </property>
                  <item>
                   <widget class="QLineEdit" name="lineEdit_Message_2">
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="styleSheet">
-                    <string notr="true">background-color: rgb(153, 155, 255);</string>
+                    <string notr="true">background-color: rgb(153, 155, 255);
+color: rgb(255, 255, 255);</string>
                    </property>
                    <property name="placeholderText">
                     <string>Send message</string>
