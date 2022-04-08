@@ -692,7 +692,7 @@ class Ui_connexion(object):
         self.pushButton_register.clicked.connect(self.createAccount)
         
         # Connect user
-        self.pushButton_login.clicked.connect(self.connectAccount)
+        self.pushButton_login.clicked.connect(lambda: self.connectAccount(connexion))
 
 
     def createAccount(self):
@@ -720,15 +720,18 @@ class Ui_connexion(object):
         # Error : No passwd or username 
         if not username or not password:
             self.label_event_register.setText("Fill in the form")
+            self.label_event_login.setStyleSheet("color:#FC6151;")
             return
             
         # Error : Different passwords
         if password != confirmPassword:
             self.label_event_register.setText("Password cannot be confirmed")
+            self.label_event_login.setStyleSheet("color:#FC6151;")
             return
             
         # Error : The user already exists
         cursor.execute("SELECT username FROM users WHERE username=?", (username,))
+        self.label_event_login.setStyleSheet("color:#FC6151;")
         data=cursor.fetchall()
         if data:
             self.label_event_register.setText("The username is already taken")
@@ -747,41 +750,44 @@ class Ui_connexion(object):
         print(results)
 
 
-    def connectAccount(self):
-        try:
-            # Connection to the database
-            conn = sqlite3.connect('users.db')
-            cursor = conn.cursor()
+    def connectAccount(self, connexion):
+        # Connection to the database
+        conn = sqlite3.connect('users.db')
+        cursor = conn.cursor()
             
-            # Recovers the data entered
-            username = self.lineEdit_username_login.text()
-            password = self.lineEdit_password_login.text()
+        # Recovers the data entered
+        username = self.lineEdit_username_login.text()
+        password = self.lineEdit_password_login.text()
             
-            # Verify user and passwd
-            query = "SELECT username,password FROM users WHERE username " \
-                    "LIKE '" + username + "'AND password LIKE '" + password + "'"
+        # Verify user and passwd
+        query = "SELECT username,password FROM users WHERE username " \
+            "LIKE '" + username + "'AND password LIKE '" + password + "'"
+        cursor.execute(query)
+        result = cursor.fetchone()
+
+        # Error : Incorrect username or passwd
+        if result == None:
+            self.label_event_login.setText("Incorrect username or password")
+            self.label_event_login.setStyleSheet("color:#FC6151;")
+
+        # Connection
+        else:
+            # Select id_user
+            query = "SELECT user_id FROM users WHERE username " \
+                "LIKE '" + username + "'"
             cursor.execute(query)
-            result = cursor.fetchone()
-
-            # Error : Incorrect username or passwd
-            if result == None:
-                self.label_event_login.setText("Incorrect username or password")
-
-            # Connection
-            else:
-                # Select id_user
-                query = "SELECT user_id FROM users WHERE username " \
-                    "LIKE '" + username + "'"
-                cursor.execute(query)
-                idUser = cursor.fetchone()[0]
+            idUser = cursor.fetchone()[0]
                 
-                self.label_event_login.setText("You are logged in")
-                self.label_event_login.setStyleSheet("color:#27AE4E;")
-                self.open = window()
-                self.open.openHomeUI(idUser)
-        
-        except:
-            self.label_event_login.setText("No database detected")
+            self.label_event_login.setText("You are logged in")
+            self.label_event_login.setStyleSheet("color:#27AE4E;")
+    
+            # Close previous window
+            connexion.hide()
+    
+            # Open the new window
+            self.open = window()
+            self.open.openHomeUI(idUser)
+
 
 
     def retranslateUi(self, connexion):
@@ -806,8 +812,9 @@ class window(object):
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_home()
         self.ui.setupUi(self.window, idUser)
-        connexion.hide()
         self.window.show()
+        
+
 
 if __name__ == "__main__":
     import sys

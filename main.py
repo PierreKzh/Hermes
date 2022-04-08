@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
 from connexionUI import *
-import sqlite3
+
 
 def hermesUI_start():
     """
