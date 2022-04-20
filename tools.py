@@ -17,11 +17,12 @@ class crypto(object):
         
             # Use key and iv to initialize AES object
             mycipher = AES.new(key, AES.MODE_CFB, iv)
-        
+
             # Add iv to the beginning of the encrypted ciphertext
-            ciphertext = iv + mycipher.encrypt(data.encode())
+            ciphertext = iv + mycipher.encrypt(str(data).encode())
             ciphertext = ciphertext.hex()
-        
+
+            print("===CHIFFREMENT TERMINE===")
             return ciphertext
         except:
             print("===CHIFFREMENT ERREUR===")
@@ -41,7 +42,8 @@ class crypto(object):
             # Decrypt the encrypted ciphertext
             decrypttext = mydecrypt.decrypt(data[16:])
             decrypttext = decrypttext.decode()
-        
+
+            print("===DECHIFFREMENT TERMINE===")
             return decrypttext
         except:
             print("===DECHIFFREMENT ERREUR===")

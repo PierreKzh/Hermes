@@ -692,6 +692,10 @@ class Ui_connexion(object):
         # Connect user
         self.pushButton_login.clicked.connect(lambda: self.connectAccount(connexion))
 
+        # login when enter is pressed
+        self.lineEdit_username_login.returnPressed.connect(self.pushButton_login.click)
+        self.lineEdit_password_login.returnPressed.connect(self.pushButton_login.click)
+
 
     def createAccount(self):
         print("===========TENTATIVE CREATION UTILISATEUR===========")
@@ -708,7 +712,7 @@ class Ui_connexion(object):
     
         # Create a contact table
         create_users_table = """CREATE TABLE IF NOT EXISTS
-            contacts([contact_id] INTEGER PRIMARY KEY, [user_id] INTEGER, [contact_username] TEXT, [contact_ip] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
+            contacts([contact_id] INTEGER PRIMARY KEY, [user_id] INTEGER, [contact_username] TEXT, [contact_onion] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
         cursor.execute(create_users_table)
         conn.commit()
       
@@ -795,6 +799,7 @@ class Ui_connexion(object):
  
             else:
                 idUser = row[0]
+                break
 
         # Connexion
         self.label_event_login.setText("You are logged in")
@@ -807,7 +812,7 @@ class Ui_connexion(object):
             
         # Open the new window
         self.open = window()
-        self.open.openHomeUI(idUser)
+        self.open.openHomeUI(idUser, decrypt_password)
 
 
     def retranslateUi(self, connexion):
@@ -828,11 +833,11 @@ class Ui_connexion(object):
         self.lineEdit_username_register.setPlaceholderText(_translate("connexion", "Username"))
 
 class window(object):
-    def openHomeUI(self, idUser):
+    def openHomeUI(self, idUser, password):
         print("============TENTATIVE OUVERTURE HOME.UI============")
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_home()
-        self.ui.setupUi(self.window, idUser)
+        self.ui.setupUi(self.window, idUser, password)
         self.window.show()
         
 
