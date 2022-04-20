@@ -4,6 +4,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 from binascii import b2a_hex
 import sys
+import sqlite3
 
 class crypto(object):
     

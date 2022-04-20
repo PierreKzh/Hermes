@@ -10,10 +10,6 @@
 from tools import *
 from homeUI import *
 from PyQt5 import QtCore, QtGui, QtWidgets
-from multiprocessing import connection
-import sys
-import sqlite3
-import pandas as pd
 
 class Ui_connexion(object):
     def setupUi(self, connexion):
@@ -700,7 +696,7 @@ class Ui_connexion(object):
     def createAccount(self):
         print("===========TENTATIVE CREATION UTILISATEUR===========")
         # Connection to the database
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('dataFile.db')
         cursor = conn.cursor()
         crypt = crypto()
     
@@ -763,7 +759,7 @@ class Ui_connexion(object):
     def connectAccount(self, connexion):
         print("===========TENTATIVE CONNEXION UTILISATEUR===========")
         # Connection to the database
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('dataFile.db')
         cursor = conn.cursor()
         crypt = crypto()
             

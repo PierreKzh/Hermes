@@ -1,12 +1,10 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget
 from connexionUI import *
-import sqlite3
 
 def hermesUI_start():
     """
     Create and lunch the first window
     """
+    print("========================HERMES START========================")
     app = QtWidgets.QApplication(sys.argv)
     connexion = QtWidgets.QMainWindow()
     uiConnect = Ui_connexion()
