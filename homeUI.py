@@ -12,6 +12,8 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAction
 from PyQt5 import QtWidgets, QtCore, QtGui
+
+import tools
 from tools import *
 
 
@@ -362,7 +364,6 @@ def deleteContact(self):
         decrypt_username = crypt.decrypted(self.currentPassword, db_username)
         # delete contact
         if currentContact == decrypt_username:
-            print(db_username, decrypt_username)
             cursor.execute(f"DELETE FROM contacts WHERE contact_username = '{db_username}'")
             break
     conn.commit()
@@ -399,23 +400,48 @@ def setCurrentContact(self):
     self.label_Title.setText(self.currentContact)
     print(f"===========SetCurrentContact : {self.currentContact}=============")
 
-
-
 def sendMessage(self):
-    message = str(self.lineEdit_Message_2)
-    address = "7mkcqhl2jr4fxshbnyxzekl3g3vdgnwoy4mea74kgxwm3d37m7ct3qad.onion"
-    pathExe = tools.os.getcwd() + "\\hermesTor\\Tor\\tor.exe"
-    pathConf = tools.os.getcwd() + "\\hermesTor\\Data\\Client\\torrc"
-    proc = tools.subprocess.Popen([pathExe, "-f", pathConf])
-    tools.socks.setdefaultproxy(tools.socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9060, True)
-    s = tools.socks.socksocket()
-    s.connect((address, 13711))
-    s.sendall(message)
+    ##########################################################################
+    # A METTRE DANS UN THREAD SINON APPLI BLOQUE LE TEMPS DENVOIS DU MESSAGE #
+    ##########################################################################
+    try:
+        message = self.lineEdit_Message_2.text()
+        self.lineEdit_Message_2.setText("")
+        if message:
+            print("=============SEND MESSAGE=========================")
+            addressOnion = ''
 
-    reply = s.recv(4069)
-    reply_json = tools.json.loads(reply)
-    print(tools.json.dumps(reply_json["replyCode"]))
-    proc.kill()
+            # Connection to the database
+            conn = sqlite3.connect('dataFile.db')
+            cursor = conn.cursor()
+            crypt = crypto()
+
+            # get contact username
+            cursor.execute(f'SELECT contact_username, contact_onion FROM contacts')
+            rows = cursor.fetchall()
+            for row in rows:
+                db_username = row[0]
+                decrypt_username = crypt.decrypted(self.currentPassword, db_username)
+                db_address = row[1]
+                decrypt_address = crypt.decrypted(self.currentPassword, db_address)
+                # get onion address
+                if self.currentContact == decrypt_username:
+                    addressOnion = decrypt_address
+                    break
+            conn.commit()
+
+            jsonMessage = '{"sendCode":100, "value":"'+message+'"}'
+            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", tools.communication.internalPortClient, True)
+            s = socks.socksocket()
+            s.connect((addressOnion, tools.communication.externalPortServer))
+            s.sendall(str.encode(jsonMessage))
+
+            reply = s.recv(4069)
+            reply_json = json.loads(reply)
+            replyCode = json.dumps(reply_json["replyCode"])
+            print(f"=============MESSAGE SEND : \"{message}\" to : {addressOnion}============")
+    except:
+        print("=============ERROR WHEN SENDING MESSAGE===============")
 
 if __name__ == "__main__":
     import sys

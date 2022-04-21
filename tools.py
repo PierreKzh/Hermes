@@ -5,6 +5,12 @@ from Crypto import Random
 from binascii import b2a_hex
 import sys
 import sqlite3
+from threading import Thread
+import subprocess
+import socket
+import time
+import json
+import socks
 
 class crypto(object):
     
@@ -48,6 +54,46 @@ class crypto(object):
         except:
             print("===DECHIFFREMENT ERREUR===")
             return None
+class communication(object):
+    internalPortClient = 9060
+    internalPortServer = 13710
+    externalPortServer = 13711
+
+    def listenMessage(socket):
+        try:
+            print("===========START SERVER LISTENING============")
+            pathExe = os.getcwd() + "\\hermesTor\\Tor\\tor.exe"
+            pathConf = os.getcwd() + "\\hermesTor\\Data\\Server\\torrc"
+            proc = subprocess.Popen([pathExe, "-f", pathConf])
+            socket.bind(('', communication.internalPortServer))
+
+            while True:
+                socket.listen(5)
+                client, address = socket.accept()
+                response = client.recv(255)
+                print(f"=============SERVER CONNECTED TO : {format(address)}==============")
+                if response != "":
+                    response_json = json.loads(response)
+                    message = json.dumps(response_json["value"])
+
+                    client.send(b'{"replyCode":1}')
+                    client.close()
+                    time.sleep(0.5)
+                    print(f"============MESSAGE GET : {message}=============")
+                    print("=========CONNECTION CLOSED============")
+        except:
+            print("============ERROR WHEN SERVER LISTENING================")
+
+    def torClient():
+        try:
+            print("=============START TOR CLIENT=================")
+            pathExe = os.getcwd() + "\\hermesTor\\Tor\\tor.exe"
+            pathConf = os.getcwd() + "\\hermesTor\\Data\\Client\\torrc"
+            subprocess.Popen([pathExe, "-f", pathConf])
+            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", communication.internalPortClient, True)
+            print("============TOR CLIENT SET==================")
+        except:
+            print("============ERROR WHEN TOR CLIENT STARTING============")
 
 
 if __name__ == '__main__':
