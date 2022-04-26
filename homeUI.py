@@ -330,15 +330,14 @@ def addContact(self):
 
     #encrypt datas
     encrypt_contactUsername = crypt.encrypted(self.currentPassword, username)
-    encrypt_contactOnion = crypt.encrypted(self.currentPassword, idContact)
+    encrypt_contactOnion = crypt.encrypted(self.currentPassword, idContact[:62])
+    encrypt_contactPubKey = crypt.encrypted(self.currentPassword, idContact[62:])
     encrypt_idUser = crypt.encrypted(self.currentPassword, self.idUser)
 
     # add contact
-    cursor.execute("INSERT INTO contacts (user_id, contact_username, contact_onion)"
-                   "VALUES ('%s', '%s', '%s')" % (''.join(encrypt_idUser),
-                                            ''.join(encrypt_contactUsername),
-                                                  ''.join(encrypt_contactOnion)))
+    cursor.execute(f"INSERT INTO contacts (user_id, contact_username, contact_onion, contact_publicKey) VALUES ('{encrypt_idUser}', '{encrypt_contactUsername}', '{encrypt_contactOnion}', '{encrypt_contactPubKey}')")
     conn.commit()
+
     self.label_AddContactEvent.setText("The contact has been added")
     self.label_AddContactEvent.setStyleSheet("color:#27AE4E;")
     self.lineEdit_Username.setText("")

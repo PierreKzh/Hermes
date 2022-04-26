@@ -706,13 +706,13 @@ class Ui_connexion(object):
     
         # Create a user table
         create_users_table = """CREATE TABLE IF NOT EXISTS
-            users([user_id] INTEGER PRIMARY KEY,[username] TEXT, [password] TEXT)"""
+            users([user_id] INTEGER PRIMARY KEY,[username] TEXT, [password] TEXT, [private_key] TEXT, [public_key] TEXT)"""
         cursor.execute(create_users_table)
         conn.commit()
     
         # Create a contact table
         create_users_table = """CREATE TABLE IF NOT EXISTS
-            contacts([contact_id] INTEGER PRIMARY KEY, [user_id] INTEGER, [contact_username] TEXT, [contact_onion] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
+            contacts([contact_id] INTEGER PRIMARY KEY, [user_id] INTEGER, [contact_username] TEXT, [contact_onion] TEXT, [contact_publicKey] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
         cursor.execute(create_users_table)
         conn.commit()
       
@@ -748,12 +748,16 @@ class Ui_connexion(object):
                 self.label_event_register.setText("The username is already taken")
                 print("===========CREATION ECHOUE : Utilisateur deja existant===========")
                 return
-    
+
+        #generating RSA key per
+        keyPair = RSA.generate(2048)
+        encrypted_pubKey = crypt.encrypted(password, keyPair.public_key().exportKey())
+        encrypted_privKey = crypt.encrypted(password, keyPair.exportKey())
+
         # Add user
-        cursor.execute("INSERT INTO users ( username, password)"
-            "VALUES ('%s', '%s')" % (''.join(encrypt_username),
-                                         ''.join(encrypt_password)))
+        cursor.execute(f"INSERT INTO users ( username, password, private_key, public_key) VALUES ('{encrypt_username}', '{encrypt_password}', '{encrypted_privKey}', '{encrypted_pubKey}')")
         conn.commit()
+
         self.label_event_register.setText("The account has been created")
         self.label_event_register.setStyleSheet("color:#27AE4E;")
 
@@ -805,6 +809,23 @@ class Ui_connexion(object):
         self.label_event_login.setText("You are logged in")
         self.label_event_login.setStyleSheet("color:#27AE4E;")
         print("===========CONNEXION REUSSITE===========")
+
+        #################################################
+        #affichage temp de l'id utilisateur
+        #################################################
+        cursor.execute(f'SELECT user_id, public_key FROM users')
+        rows = cursor.fetchall()
+        for row in rows:
+            db_username = row[0]
+            decrypt_username = crypt.decrypted(password, db_username)
+            db_usernam = row[1]
+            decrypt_usernam = crypt.decrypted(password, db_usernam)
+            print(row[0])
+            # delete contact
+            if db_username == idUser:
+                print(f"public key : {decrypt_usernam}")
+                break
+        #################################################
 
         # Close previous window
         connexion.hide()

@@ -2,6 +2,8 @@ import os, binascii, codecs
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Cipher import AES
 from Crypto import Random
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 from binascii import b2a_hex
 import sys
 import sqlite3
@@ -54,6 +56,17 @@ class crypto(object):
         except:
             print("===DECHIFFREMENT ERREUR===")
             return None
+
+    def encrypt_RSA(pubKey, msg):
+        encryptor = PKCS1_OAEP.new(pubKey)
+        encrypted = encryptor.encrypt(msg)
+        return encrypted
+
+    def decrypt_RSA(keyPair, encrypted):
+        decryptor = PKCS1_OAEP.new(keyPair)
+        decrypted = decryptor.decrypt(encrypted)
+        return decrypted
+
 class communication(object):
     internalPortClient = 9060
     internalPortServer = 13710
