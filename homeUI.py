@@ -10,8 +10,8 @@
 
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QAction
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QAction, QApplication
+from PyQt5 import QtWidgets, QtCore, QtGui, QtTest
 
 import tools
 from tools import *
@@ -19,7 +19,7 @@ from tools import *
 
 
 class Ui_home(object):
-    def setupUi(self, homeWindow, idUser, password):
+    def setupUi(self, homeWindow, idUser):
         print("========================START HOME========================")
         homeWindow.setObjectName("MainWindow")
         homeWindow.resize(1273, 793)
@@ -266,7 +266,6 @@ class Ui_home(object):
         #add function for an action in list members
         self.actionDelete.triggered.connect(lambda _, s=self: deleteContact(s))
         #display members list in the widget list contact
-        self.currentPassword = password
         self.idUser = idUser
         displayListWidget_contacts(self)
         #add contact pushing the buttun
@@ -287,6 +286,11 @@ class Ui_home(object):
             lambda: self.stackedWidget_2.setCurrentWidget(self.page_message))
         self.pushButton_pagemessage1.clicked.connect(
             lambda: self.stackedWidget_2.setCurrentWidget(self.page_message))
+
+        #button for copy user id
+        self.buttonCopyId = QtWidgets.QPushButton("copy ID", self.page_Profil)
+        self.horizontalLayout_9.addWidget(self.buttonCopyId)
+        self.buttonCopyId.clicked.connect(lambda _, s=self: copyIdToClipboard(s))
 
         print("ID de l'utilisateur connecté : ", idUser)
 
@@ -310,6 +314,14 @@ class Ui_home(object):
         self.pushButton_pagemessage1_2.setText(_translate("MainWindow", "Back"))
         self.label_Parameter.setText(_translate("MainWindow", "Parameter"))
 
+def copyIdToClipboard(self):
+    cb = QApplication.clipboard()
+    cb.clear(mode=cb.Clipboard)
+    cb.setText(f"{tools.sharedOnionAddress}{tools.sharedPublicKey}", mode=cb.Clipboard)
+    self.buttonCopyId.setText('copied !')
+    QtTest.QTest.qWait(750)
+    self.buttonCopyId.setText('copy ID')
+
 def addContact(self):
     print("===========add contact=============")
     # Connection to the database
@@ -318,8 +330,8 @@ def addContact(self):
     crypt = crypto()
 
     #get informations
-    username = str(self.lineEdit_Username.text())
-    idContact = str(self.lineEdit_IdContact.text())
+    username = self.lineEdit_Username.text()
+    idContact = self.lineEdit_IdContact.text()
 
     # Error : No passwd or username
     if not username or not idContact:
@@ -329,10 +341,10 @@ def addContact(self):
         return
 
     #encrypt datas
-    encrypt_contactUsername = crypt.encrypted(self.currentPassword, username)
-    encrypt_contactOnion = crypt.encrypted(self.currentPassword, idContact[:62])
-    encrypt_contactPubKey = crypt.encrypted(self.currentPassword, idContact[62:])
-    encrypt_idUser = crypt.encrypted(self.currentPassword, self.idUser)
+    encrypt_contactUsername = crypt.encrypted(sharedPassword, username)
+    encrypt_contactOnion = crypt.encrypted(sharedPassword, idContact[:62])
+    encrypt_contactPubKey = crypt.encrypted(sharedPassword, idContact[62:])
+    encrypt_idUser = crypt.encrypted(sharedPassword, self.idUser)
 
     # add contact
     cursor.execute(f"INSERT INTO contacts (user_id, contact_username, contact_onion, contact_publicKey) VALUES ('{encrypt_idUser}', '{encrypt_contactUsername}', '{encrypt_contactOnion}', '{encrypt_contactPubKey}')")
@@ -360,7 +372,7 @@ def deleteContact(self):
     rows = cursor.fetchall()
     for row in rows:
         db_username = row[0]
-        decrypt_username = crypt.decrypted(self.currentPassword, db_username)
+        decrypt_username = crypt.decrypted(sharedPassword, db_username)
         # delete contact
         if currentContact == decrypt_username:
             cursor.execute(f"DELETE FROM contacts WHERE contact_username = '{db_username}'")
@@ -384,9 +396,9 @@ def displayListWidget_contacts(self):
     rows = cursor.fetchall()
     for row in rows:
         db_userId = row[0]
-        decrypt_userId = crypt.decrypted(self.currentPassword, db_userId)
+        decrypt_userId = crypt.decrypted(sharedPassword, db_userId)
         db_username = row[1]
-        decrypt_username = crypt.decrypted(self.currentPassword, db_username)
+        decrypt_username = crypt.decrypted(sharedPassword, db_username)
         # display contact
         if decrypt_userId == str(self.idUser):
             self.listWidget_contacts.insertItem(0, decrypt_username)
@@ -403,44 +415,51 @@ def sendMessage(self):
     ##########################################################################
     # A METTRE DANS UN THREAD SINON APPLI BLOQUE LE TEMPS DENVOIS DU MESSAGE #
     ##########################################################################
-    try:
+    #try:
         message = self.lineEdit_Message_2.text()
         self.lineEdit_Message_2.setText("")
         if message:
             print("=============SEND MESSAGE=========================")
             addressOnion = ''
+            publicKey = ''
 
             # Connection to the database
             conn = sqlite3.connect('dataFile.db')
             cursor = conn.cursor()
             crypt = crypto()
 
-            # get contact username
-            cursor.execute(f'SELECT contact_username, contact_onion FROM contacts')
+            # get contact
+            cursor.execute('SELECT contact_username, contact_onion, contact_publicKey FROM contacts')
             rows = cursor.fetchall()
             for row in rows:
                 db_username = row[0]
-                decrypt_username = crypt.decrypted(self.currentPassword, db_username)
+                decrypt_username = crypt.decrypted(sharedPassword, db_username)
                 db_address = row[1]
-                decrypt_address = crypt.decrypted(self.currentPassword, db_address)
+                decrypt_address = crypt.decrypted(sharedPassword, db_address)
+                db_publicKey = row[2]
+                decrypt_publicKey = crypt.decrypted(sharedPassword, db_publicKey)
                 # get onion address
                 if self.currentContact == decrypt_username:
                     addressOnion = decrypt_address
+                    publicKey = decrypt_publicKey.replace(r'\n', '\n')
                     break
             conn.commit()
 
+            #encrypt message
             jsonMessage = '{"sendCode":100, "value":"'+message+'"}'
+            import_pubKey = RSA.importKey(bytes(publicKey, 'utf-8'))
+            jsonMessageEncrypt = crypto.encrypt_RSA(import_pubKey, bytes(jsonMessage, 'utf-8'))
+
+            #send message
             socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", tools.communication.internalPortClient, True)
             s = socks.socksocket()
             s.connect((addressOnion, tools.communication.externalPortServer))
-            s.sendall(str.encode(jsonMessage))
+            s.sendall(jsonMessageEncrypt)
 
-            reply = s.recv(4069)
-            reply_json = json.loads(reply)
-            replyCode = json.dumps(reply_json["replyCode"])
+            #reply = s.recv(4096)
             print(f"=============MESSAGE SEND : \"{message}\" to : {addressOnion}============")
-    except:
-        print("=============ERROR WHEN SENDING MESSAGE===============")
+    #except:
+        #print("=============ERROR WHEN SENDING MESSAGE===============")
 
 if __name__ == "__main__":
     import sys

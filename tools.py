@@ -13,6 +13,13 @@ import socket
 import time
 import json
 import socks
+import hashlib
+
+sharedPassword = ""
+userId = 0
+dataBase = "dataFile.db"
+sharedPublicKey = ""
+sharedOnionAddress = ""
 
 class crypto(object):
     
@@ -42,7 +49,7 @@ class crypto(object):
             print("===DECHIFFREMENT EN COURS===")
             salt = binascii.unhexlify('7d34f60be198c7397de94885a7489390')   # Salt
             key = binascii.hexlify(PBKDF2(password, salt, dkLen=16))        # Key
-            data = binascii.unhexlify(data)                                 
+            data = binascii.unhexlify(data)
         
             # Use key and iv to generate a new AES object
             mydecrypt = AES.new(key, AES.MODE_CFB, data[:16])
@@ -50,22 +57,28 @@ class crypto(object):
             # Decrypt the encrypted ciphertext
             decrypttext = mydecrypt.decrypt(data[16:])
             decrypttext = decrypttext.decode()
-
             print("===DECHIFFREMENT TERMINE===")
             return decrypttext
         except:
             print("===DECHIFFREMENT ERREUR===")
-            return None
 
     def encrypt_RSA(pubKey, msg):
         encryptor = PKCS1_OAEP.new(pubKey)
         encrypted = encryptor.encrypt(msg)
         return encrypted
 
-    def decrypt_RSA(keyPair, encrypted):
+    def decrypt_RSA(self, keyPair, encrypted):
         decryptor = PKCS1_OAEP.new(keyPair)
         decrypted = decryptor.decrypt(encrypted)
         return decrypted
+
+    def toSHA(self, password):
+        """
+        transform text into SHA
+        :param password: original text
+        :return: SHA in hexa
+        """
+        return hashlib.sha256(password.encode()).hexdigest()
 
 class communication(object):
     internalPortClient = 9060
@@ -74,6 +87,8 @@ class communication(object):
 
     def listenMessage(socket):
         try:
+            userPrivateKey = ""
+
             print("===========START SERVER LISTENING============")
             pathExe = os.getcwd() + "\\hermesTor\\Tor\\tor.exe"
             pathConf = os.getcwd() + "\\hermesTor\\Data\\Server\\torrc"
@@ -83,19 +98,48 @@ class communication(object):
             while True:
                 socket.listen(5)
                 client, address = socket.accept()
-                response = client.recv(255)
+                encryptedResponse = client.recv(4096)
                 print(f"=============SERVER CONNECTED TO : {format(address)}==============")
-                if response != "":
-                    response_json = json.loads(response)
-                    message = json.dumps(response_json["value"])
+                if encryptedResponse != "":
+                    # Connection to the database
+                    conn = sqlite3.connect(dataBase)
+                    cursor = conn.cursor()
 
-                    client.send(b'{"replyCode":1}')
+                    # get privateKey
+                    cursor.execute('SELECT user_id, private_key FROM users')
+                    rows = cursor.fetchall()
+                    for row in rows:
+                        db_userId = row[0]
+                        db_privateKey = row[1]
+                        decrypt_privateKey = crypto().decrypted(sharedPassword, db_privateKey)
+                        if db_userId == userId:
+                            userPrivateKey = decrypt_privateKey.replace(r'\n', '\n')
+                    conn.commit()
+
+                    #decrypt message
+                    import_privateKey = RSA.import_key(bytes(userPrivateKey, 'utf-8'))
+                    response = crypto().decrypt_RSA(import_privateKey, encryptedResponse)
+                    communication.checkCode(response)
+
+                    #client.send(b'{"replyCode":1}')
                     client.close()
                     time.sleep(0.5)
-                    print(f"============MESSAGE GET : {message}=============")
                     print("=========CONNECTION CLOSED============")
         except:
             print("============ERROR WHEN SERVER LISTENING================")
+
+    def checkCode(response):
+        response_json = json.loads(response)
+        code = json.dumps(response_json["sendCode"])
+
+        if int(code) == 100:
+            message = json.dumps(response_json["value"])
+            communication.getMessage(message)
+
+    def getMessage(message):
+        #mettre dans la bdd#
+        print(f"============MESSAGE GET : {message}============")
+
 
     def torClient():
         try:

@@ -706,14 +706,14 @@ class Ui_connexion(object):
     
         # Create a user table
         create_users_table = """CREATE TABLE IF NOT EXISTS
-            users([user_id] INTEGER PRIMARY KEY,[username] TEXT, [password] TEXT, [private_key] TEXT, [public_key] TEXT)"""
+            users([user_id] INTEGER PRIMARY KEY,[username] TEXT, [password] TEXT, [private_key] TEXT, [public_key] TEXT, [torAddress] TEXT)"""
         cursor.execute(create_users_table)
         conn.commit()
     
         # Create a contact table
-        create_users_table = """CREATE TABLE IF NOT EXISTS
+        create_contact_table = """CREATE TABLE IF NOT EXISTS
             contacts([contact_id] INTEGER PRIMARY KEY, [user_id] INTEGER, [contact_username] TEXT, [contact_onion] TEXT, [contact_publicKey] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
-        cursor.execute(create_users_table)
+        cursor.execute(create_contact_table)
         conn.commit()
       
         # Recovers the data entered
@@ -723,7 +723,7 @@ class Ui_connexion(object):
         
         # Encrypted data entered
         encrypt_username = crypt.encrypted(password, username)
-        encrypt_password = crypt.encrypted('', password)
+        hashed_password = crypt.toSHA(password)
     
         # Error : No passwd or username 
         if not username or not password:
@@ -751,11 +751,16 @@ class Ui_connexion(object):
 
         #generating RSA key per
         keyPair = RSA.generate(2048)
-        encrypted_pubKey = crypt.encrypted(password, keyPair.public_key().exportKey())
-        encrypted_privKey = crypt.encrypted(password, keyPair.exportKey())
+        encrypted_pubKey = crypt.encrypted(password, str(keyPair.public_key().exportKey())[2::][:-1])
+        encrypted_privKey = crypt.encrypted(password, str(keyPair.exportKey())[2::][:-1])
+
+        #get the onion address
+        with open("./hermesTor/hidden_service/hostname", "r") as f:
+            onionAddress = f.read()
+            encrypted_onionAddress = crypt.encrypted(password, onionAddress.strip('\n'))
 
         # Add user
-        cursor.execute(f"INSERT INTO users ( username, password, private_key, public_key) VALUES ('{encrypt_username}', '{encrypt_password}', '{encrypted_privKey}', '{encrypted_pubKey}')")
+        cursor.execute(f"INSERT INTO users ( username, password, private_key, public_key, torAddress) VALUES ('{encrypt_username}', '{hashed_password}', '{encrypted_privKey}', '{encrypted_pubKey}', '{encrypted_onionAddress}')")
         conn.commit()
 
         self.label_event_register.setText("The account has been created")
@@ -763,9 +768,9 @@ class Ui_connexion(object):
 
         print("===========CREATION REUSSITE===========\n")
 
-
     def connectAccount(self, connexion):
         print("===========TENTATIVE CONNEXION UTILISATEUR===========")
+
         # Connection to the database
         conn = sqlite3.connect('dataFile.db')
         cursor = conn.cursor()
@@ -789,11 +794,15 @@ class Ui_connexion(object):
         for row in rows:
             db_username = ''.join(row[1])
             decrypt_username = crypt.decrypted(password, db_username)
-            db_password = ''.join(row[2])
-            decrypt_password = crypt.decrypted('', db_password)
+            db_password = row[2]
+            db_publicKey = row[4]
+            decrypt_publicKey = crypt.decrypted(password, db_publicKey)
+            print(decrypt_publicKey)
+            db_onionAddress = row[5]
+            decrypt_onionAddress = crypt.decrypted(password, db_onionAddress)
         
             # Check if the user is logged in
-            if ((decrypt_username != username) or (decrypt_password != password)):
+            if ((decrypt_username != username) or (db_password != crypt.toSHA(password))):
                 i = i+1
                 if i == len(rows):
                     self.label_event_login.setStyleSheet("color:#FC6151;")
@@ -803,6 +812,10 @@ class Ui_connexion(object):
  
             else:
                 idUser = row[0]
+                tools.userId = idUser
+                tools.sharedPassword = password
+                tools.sharedPublicKey = decrypt_publicKey.replace(r'\n', '\n')
+                tools.sharedOnionAddress = decrypt_onionAddress
                 break
 
         # Connexion
@@ -817,7 +830,7 @@ class Ui_connexion(object):
         rows = cursor.fetchall()
         for row in rows:
             db_username = row[0]
-            decrypt_username = crypt.decrypted(password, db_username)
+            #decrypt_username = crypt.decrypted(password, db_username)
             db_usernam = row[1]
             decrypt_usernam = crypt.decrypted(password, db_usernam)
             print(row[0])
@@ -833,7 +846,7 @@ class Ui_connexion(object):
             
         # Open the new window
         self.open = window()
-        self.open.openHomeUI(idUser, decrypt_password)
+        self.open.openHomeUI(idUser)
 
 
     def retranslateUi(self, connexion):
@@ -854,11 +867,11 @@ class Ui_connexion(object):
         self.lineEdit_username_register.setPlaceholderText(_translate("connexion", "Username"))
 
 class window(object):
-    def openHomeUI(self, idUser, password):
+    def openHomeUI(self, idUser):
         print("============TENTATIVE OUVERTURE HOME.UI============")
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_home()
-        self.ui.setupUi(self.window, idUser, password)
+        self.ui.setupUi(self.window, idUser)
         self.window.show()
         
 
