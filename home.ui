@@ -289,25 +289,15 @@ color: rgb(255, 255, 255);</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_IPaddress">
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(255, 255, 255);</string>
-                   </property>
-                   <property name="text">
-                    <string>IP address : </string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="1">
-                  <widget class="QLineEdit" name="lineEdit_IPaddress">
+                  <widget class="QLineEdit" name="lineEdit_IdContact">
                    <property name="styleSheet">
                     <string notr="true">color: rgb(255, 255, 255);</string>
                    </property>
                   </widget>
                  </item>
                  <item row="3" column="0" colspan="2">
-                  <widget class="QLabel" name="label_IPaddressEvent">
+                  <widget class="QLabel" name="label_AddContactEvent">
                    <property name="styleSheet">
                     <string notr="true">color: rgb(255, 0, 0);</string>
                    </property>
@@ -323,6 +313,16 @@ color: rgb(255, 255, 255);</string>
                    </property>
                    <property name="text">
                     <string>Add</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_IdContact">
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(255, 255, 255);</string>
+                   </property>
+                   <property name="text">
+                    <string>Id : </string>
                    </property>
                   </widget>
                  </item>
