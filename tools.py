@@ -14,6 +14,8 @@ import time
 import json
 import socks
 import hashlib
+import pyaes
+import datetime
 
 sharedPassword = ""
 userId = 0
@@ -22,43 +24,34 @@ sharedPublicKey = ""
 sharedOnionAddress = ""
 
 class crypto(object):
-    
+    salt = binascii.unhexlify('7d34f60be198c7397de94885a7489390')
+
     def encrypted(self, password, data):
         try:
             print("===CHIFFREMENT EN COURS===")
-            iv = Random.new().read(AES.block_size)                          #IV
-            salt = binascii.unhexlify('7d34f60be198c7397de94885a7489390')   # Salt
-            key = binascii.hexlify(PBKDF2(password, salt, dkLen=16))        # Key
-        
-            # Use key and iv to initialize AES object
-            mycipher = AES.new(key, AES.MODE_CFB, iv)
+            # key must be bytes, so we convert it
+            key = binascii.hexlify(PBKDF2(password, crypto.salt, dkLen=16))
 
-            # Add iv to the beginning of the encrypted ciphertext
-            ciphertext = iv + mycipher.encrypt(str(data).encode())
-            ciphertext = ciphertext.hex()
+            aes = pyaes.AESModeOfOperationCTR(key)
+            ciphertext = aes.encrypt(data)
 
             print("===CHIFFREMENT TERMINE===")
-            return ciphertext
+            return ciphertext.hex()
         except:
             print("===CHIFFREMENT ERREUR===")
-            return None
-
 
     def decrypted(self, password, data):
+        print("===DECHIFFREMENT EN COURS===")
         try:
-            print("===DECHIFFREMENT EN COURS===")
-            salt = binascii.unhexlify('7d34f60be198c7397de94885a7489390')   # Salt
-            key = binascii.hexlify(PBKDF2(password, salt, dkLen=16))        # Key
-            data = binascii.unhexlify(data)
-        
-            # Use key and iv to generate a new AES object
-            mydecrypt = AES.new(key, AES.MODE_CFB, data[:16])
+            # DECRYPTION
+            # CRT mode decryption requires a new instance be created
+            key = binascii.hexlify(PBKDF2(password, crypto.salt, dkLen=16))
+            aes = pyaes.AESModeOfOperationCTR(key)
 
-            # Decrypt the encrypted ciphertext
-            decrypttext = mydecrypt.decrypt(data[16:])
-            decrypttext = decrypttext.decode()
+            # decrypted data is always binary, need to decode to plaintext
+            decrypted = aes.decrypt(binascii.unhexlify(data)).decode('utf-8')
             print("===DECHIFFREMENT TERMINE===")
-            return decrypttext
+            return decrypted
         except:
             print("===DECHIFFREMENT ERREUR===")
 
@@ -129,16 +122,49 @@ class communication(object):
             print("============ERROR WHEN SERVER LISTENING================")
 
     def checkCode(response):
-        response_json = json.loads(response)
-        code = json.dumps(response_json["sendCode"])
+        print("==========CHECK CODE============")
+        try:
+            response_json = json.loads(response)
+            code = json.dumps(response_json["sendCode"])
 
-        if int(code) == 100:
-            message = json.dumps(response_json["value"])
-            communication.getMessage(message)
+            if int(code) == 100:
+                message = json.loads(json.dumps(response_json["value"]))
+                torAddress = json.loads(json.dumps(response_json["torAddress"]))
+                communication.getMessage(message, torAddress)
+        except:
+            print("=========ERROR CHECK CODE========")
 
-    def getMessage(message):
-        #mettre dans la bdd#
-        print(f"============MESSAGE GET : {message}============")
+    def getMessage(message, torAddress):
+        print("==========GET MESSAGE===========")
+        try:
+            # Connection to the database
+            conn = sqlite3.connect('dataFile.db')
+            cursor = conn.cursor()
+            crypt = crypto()
+
+            # get contact
+            cursor.execute('SELECT contact_id, contact_onion FROM contacts')
+            rows = cursor.fetchall()
+            for row in rows:
+                db_contactID = row[0]
+                db_torAddress = row[1]
+                decrypt_torAddress = crypt.decrypted(sharedPassword, db_torAddress)
+                if torAddress == decrypt_torAddress:
+                    now = datetime.datetime.now()
+                    dateMessage = now.strftime("%d-%m-%Y %H:%M:%S")
+                    encrypted_UserId = crypto().encrypted(sharedPassword, str(userId))
+                    encrypted_contactId = crypto().encrypted(sharedPassword, str(db_contactID))
+                    encrypted_dateMessage = crypto().encrypted(sharedPassword, str(dateMessage))
+                    encrypted_message = crypto().encrypted(sharedPassword, str(message))
+                    print("add bdd")
+                    print(userId, db_contactID, dateMessage, message)
+                    print(encrypted_UserId, encrypted_contactId, encrypted_dateMessage, encrypted_message)
+                    break
+            conn.commit()
+
+            print(f"============MESSAGE GET : {message}============")
+        except:
+            print("=========ERROR GET MESSAGE============")
 
 
     def torClient():

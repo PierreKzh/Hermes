@@ -12,10 +12,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAction, QApplication
 from PyQt5 import QtWidgets, QtCore, QtGui, QtTest
-
 import tools
-from tools import *
-
 
 
 class Ui_home(object):
@@ -292,8 +289,6 @@ class Ui_home(object):
         self.horizontalLayout_9.addWidget(self.buttonCopyId)
         self.buttonCopyId.clicked.connect(lambda _, s=self: copyIdToClipboard(s))
 
-        print("ID de l'utilisateur connecté : ", idUser)
-
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -325,9 +320,9 @@ def copyIdToClipboard(self):
 def addContact(self):
     print("===========add contact=============")
     # Connection to the database
-    conn = sqlite3.connect('dataFile.db')
+    conn = tools.sqlite3.connect('dataFile.db')
     cursor = conn.cursor()
-    crypt = crypto()
+    crypt = tools.crypto()
 
     #get informations
     username = self.lineEdit_Username.text()
@@ -341,10 +336,10 @@ def addContact(self):
         return
 
     #encrypt datas
-    encrypt_contactUsername = crypt.encrypted(sharedPassword, username)
-    encrypt_contactOnion = crypt.encrypted(sharedPassword, idContact[:62])
-    encrypt_contactPubKey = crypt.encrypted(sharedPassword, idContact[62:])
-    encrypt_idUser = crypt.encrypted(sharedPassword, self.idUser)
+    encrypt_contactUsername = crypt.encrypted(tools.sharedPassword, username)
+    encrypt_contactOnion = crypt.encrypted(tools.sharedPassword, idContact[:62])
+    encrypt_contactPubKey = crypt.encrypted(tools.sharedPassword, idContact[62:])
+    encrypt_idUser = crypt.encrypted(tools.sharedPassword, str(tools.userId))
 
     # add contact
     cursor.execute(f"INSERT INTO contacts (user_id, contact_username, contact_onion, contact_publicKey) VALUES ('{encrypt_idUser}', '{encrypt_contactUsername}', '{encrypt_contactOnion}', '{encrypt_contactPubKey}')")
@@ -363,16 +358,16 @@ def deleteContact(self):
     currentContact = self.listWidget_contacts.currentItem().text()
 
     # Connection to the database
-    conn = sqlite3.connect('dataFile.db')
+    conn = tools.sqlite3.connect('dataFile.db')
     cursor = conn.cursor()
-    crypt = crypto()
+    crypt = tools.crypto()
 
     # get contact username
     cursor.execute(f'SELECT contact_username FROM contacts')
     rows = cursor.fetchall()
     for row in rows:
         db_username = row[0]
-        decrypt_username = crypt.decrypted(sharedPassword, db_username)
+        decrypt_username = crypt.decrypted(tools.sharedPassword, db_username)
         # delete contact
         if currentContact == decrypt_username:
             cursor.execute(f"DELETE FROM contacts WHERE contact_username = '{db_username}'")
@@ -387,20 +382,20 @@ def displayListWidget_contacts(self):
     self.listWidget_contacts.clear()
 
     # bdd connexion
-    conn = sqlite3.connect('dataFile.db')
+    conn = tools.sqlite3.connect('dataFile.db')
     cursor = conn.cursor()
-    crypt = crypto()
+    crypt = tools.crypto()
 
     # get contact username
-    cursor.execute(f'SELECT user_id, contact_username FROM contacts')
+    cursor.execute('SELECT user_id, contact_username FROM contacts')
     rows = cursor.fetchall()
     for row in rows:
         db_userId = row[0]
-        decrypt_userId = crypt.decrypted(sharedPassword, db_userId)
+        decrypt_userId = crypt.decrypted(tools.sharedPassword, db_userId)
         db_username = row[1]
-        decrypt_username = crypt.decrypted(sharedPassword, db_username)
+        decrypt_username = crypt.decrypted(tools.sharedPassword, db_username)
         # display contact
-        if decrypt_userId == str(self.idUser):
+        if decrypt_userId == str(tools.userId):
             self.listWidget_contacts.insertItem(0, decrypt_username)
 
     print("===========displayListWidget_contacts END=============")
@@ -424,20 +419,20 @@ def sendMessage(self):
             publicKey = ''
 
             # Connection to the database
-            conn = sqlite3.connect('dataFile.db')
+            conn = tools.sqlite3.connect('dataFile.db')
             cursor = conn.cursor()
-            crypt = crypto()
+            crypt = tools.crypto()
 
             # get contact
             cursor.execute('SELECT contact_username, contact_onion, contact_publicKey FROM contacts')
             rows = cursor.fetchall()
             for row in rows:
                 db_username = row[0]
-                decrypt_username = crypt.decrypted(sharedPassword, db_username)
+                decrypt_username = crypt.decrypted(tools.sharedPassword, db_username)
                 db_address = row[1]
-                decrypt_address = crypt.decrypted(sharedPassword, db_address)
+                decrypt_address = crypt.decrypted(tools.sharedPassword, db_address)
                 db_publicKey = row[2]
-                decrypt_publicKey = crypt.decrypted(sharedPassword, db_publicKey)
+                decrypt_publicKey = crypt.decrypted(tools.sharedPassword, db_publicKey)
                 # get onion address
                 if self.currentContact == decrypt_username:
                     addressOnion = decrypt_address
@@ -446,13 +441,13 @@ def sendMessage(self):
             conn.commit()
 
             #encrypt message
-            jsonMessage = '{"sendCode":100, "value":"'+message+'"}'
-            import_pubKey = RSA.importKey(bytes(publicKey, 'utf-8'))
-            jsonMessageEncrypt = crypto.encrypt_RSA(import_pubKey, bytes(jsonMessage, 'utf-8'))
+            jsonMessage = '{"sendCode":100, "value":"'+message+'", "torAddress":"'+tools.sharedOnionAddress+'"}'
+            import_pubKey = tools.RSA.importKey(bytes(publicKey, 'utf-8'))
+            jsonMessageEncrypt = tools.crypto.encrypt_RSA(import_pubKey, bytes(jsonMessage, 'utf-8'))
 
             #send message
-            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", tools.communication.internalPortClient, True)
-            s = socks.socksocket()
+            tools.socks.setdefaultproxy(tools.socks.PROXY_TYPE_SOCKS5, "127.0.0.1", tools.communication.internalPortClient, True)
+            s = tools.socks.socksocket()
             s.connect((addressOnion, tools.communication.externalPortServer))
             s.sendall(jsonMessageEncrypt)
 
