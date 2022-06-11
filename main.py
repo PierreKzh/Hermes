@@ -37,3 +37,4 @@ if __name__ == '__main__':
         print("==============ERROR WHEN LUNCHING APP==============")
     finally:
         print("===========CLOSE===============")
+

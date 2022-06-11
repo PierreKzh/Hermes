@@ -695,7 +695,6 @@ class Ui_connexion(object):
         self.lineEdit_username_login.returnPressed.connect(self.pushButton_login.click)
         self.lineEdit_password_login.returnPressed.connect(self.pushButton_login.click)
 
-
     def createAccount(self):
         print("===========TENTATIVE CREATION UTILISATEUR===========")
         # Connection to the database
@@ -708,23 +707,41 @@ class Ui_connexion(object):
             users([user_id] INTEGER PRIMARY KEY,[username] TEXT, [password] TEXT, [private_key] TEXT, [public_key] TEXT, [torAddress] TEXT)"""
         cursor.execute(create_users_table)
         conn.commit()
-    
+
         # Create a contact table
         create_contact_table = """CREATE TABLE IF NOT EXISTS
-            contacts([contact_id] INTEGER PRIMARY KEY, [user_id] TEXT, [contact_username] TEXT, [contact_onion] TEXT, [contact_publicKey] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
+            contacts([contact_id] INTEGER PRIMARY KEY, [user_id] TEXT, [contact_username] TEXT, [contact_onion] TEXT, [contact_publicKey] TEXT, [waiting] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]))"""
         cursor.execute(create_contact_table)
         conn.commit()
-      
+
+        # Create conversations table
+        create_conversation_table = """CREATE TABLE IF NOT EXISTS
+            conversations([conversation_id] INTEGER PRIMARY KEY, [user_id] TEXT, [contact_id] TEXT, FOREIGN KEY ([user_id]) REFERENCES users([user_id]), FOREIGN KEY ([contact_id]) REFERENCES users([contact_id]))"""
+        cursor.execute(create_conversation_table)
+        conn.commit()
+
+        # Create messages table
+        create_message_table = """CREATE TABLE IF NOT EXISTS
+            messages([message_id] INTEGER PRIMARY KEY, [conversation_id] TEXT, [sender_direction] TEXT, [sender_username] TEXT, [date] TEXT, [message] TEXT, FOREIGN KEY ([conversation_id]) REFERENCES conversations([conversation_id]))"""
+        cursor.execute(create_message_table)
+        conn.commit()
+
+        # Create a sending memory table
+        create_sendingMemory_table = """CREATE TABLE IF NOT EXISTS
+                    sendingMemory([sm_id] INTEGER PRIMARY KEY, [user_id] TEXT, [message] TEXT, [contact_address] TEXT)"""
+        cursor.execute(create_sendingMemory_table)
+        conn.commit()
+
         # Recovers the data entered
         username = self.lineEdit_username_register.text()
         password = self.lineEdit_password_register.text()
         confirmPassword = self.lineEdit_confirmPassword_register.text()
-        
+
         # Encrypted data entered
         encrypt_username = crypt.encrypted(password, username)
         hashed_password = crypt.toSHA(password)
-    
-        # Error : No passwd or username 
+
+        # Error : No passwd or username
         if not username or not password:
             self.label_event_register.setStyleSheet("color:#FC6151;")
             self.label_event_register.setText("Fill in the form")
@@ -773,18 +790,18 @@ class Ui_connexion(object):
         conn = tools.sqlite3.connect('dataFile.db')
         cursor = conn.cursor()
         crypt = tools.crypto()
-            
+
         # Recovers the data entered
         username = self.lineEdit_username_login.text()
         password = self.lineEdit_password_login.text()
- 
-        # Error : No passwd or username 
+
+        # Error : No passwd or username
         if not username or not password:
             self.label_event_login.setStyleSheet("color:#FC6151;")
             self.label_event_login.setText("Fill in the form")
             print("===========CREATION ECHOUE : Password ou Username manquant===========")
             return
-            
+
         # Verify user and passwd
         cursor.execute('SELECT * FROM users')
         rows = cursor.fetchall()
@@ -797,7 +814,7 @@ class Ui_connexion(object):
             decrypt_publicKey = crypt.decrypted(password, db_publicKey)
             db_onionAddress = row[5]
             decrypt_onionAddress = crypt.decrypted(password, db_onionAddress)
-        
+
             # Check if the user is logged in
             if ((decrypt_username != username) or (db_password != crypt.toSHA(password))):
                 i = i+1
@@ -806,7 +823,7 @@ class Ui_connexion(object):
                     self.label_event_login.setText("Incorrect username or password")
                     print("===========CREATION ECHOUE : Utilisateur non trouvé===========")
                     return
- 
+
             else:
                 idUser = row[0]
                 tools.userId = idUser
@@ -814,6 +831,11 @@ class Ui_connexion(object):
                 tools.sharedPublicKey = decrypt_publicKey.replace(r'\n', '\n')
                 tools.sharedOnionAddress = decrypt_onionAddress
                 break
+
+        #thread to send message waiting
+        sendingRetry = tools.Thread(target=tools.communication.retrySend)
+        sendingRetry.setDaemon(True)
+        sendingRetry.start()
 
         # Connexion
         self.label_event_login.setText("You are logged in")
@@ -828,6 +850,10 @@ class Ui_connexion(object):
         self.open = window()
         self.open.openHomeUI(idUser)
 
+    def sleeper(i):
+        print("Le thread %d est en veille pendant 5 secondes" % i)
+        time.sleep(5)
+        print("Le tread %d s'est reveille" % i)
 
     def retranslateUi(self, connexion):
         _translate = QtCore.QCoreApplication.translate
