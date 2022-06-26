@@ -12,8 +12,9 @@ Designed for do not keeping any datas from is user.
 
 ## Informations
 
-\author Kerzerho Pierre <<kerzerho.pierre13@gmail.com>>
-\author Fave Jean-Baptiste <<jb21.fave@gmail.com>>
+\author Kerzerho Pierre
+\author Fave Jean-Baptiste
+\contact contact@hermessenger.fr
 \date 2021
 \version 0.1
 > [hermessenger.fr](https://hermessenger.fr)

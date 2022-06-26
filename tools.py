@@ -137,11 +137,12 @@ class communication(object):
     def listenMessage(socket):
         try:
             userPrivateKey = ""
+            CREATE_NO_WINDOW = 0x08000000
 
             print("===========START SERVER LISTENING============")
             pathExe = os.getcwd() + "\\hermesTor\\Tor\\tor.exe"
             pathConf = os.getcwd() + "\\hermesTor\\Data\\Server\\torrc"
-            proc = subprocess.Popen([pathExe, "-f", pathConf])
+            proc = subprocess.Popen([pathExe, "-f", pathConf], creationflags=CREATE_NO_WINDOW)
             socket.bind(('', communication.internalPortServer))
 
             while True:
@@ -297,9 +298,11 @@ class communication(object):
     def torClient():
         try:
             print("=============START TOR CLIENT=================")
+            CREATE_NO_WINDOW = 0x08000000
+
             pathExe = os.getcwd() + "\\hermesTor\\Tor\\tor.exe"
             pathConf = os.getcwd() + "\\hermesTor\\Data\\Client\\torrc"
-            subprocess.Popen([pathExe, "-f", pathConf])
+            subprocess.Popen([pathExe, "-f", pathConf], creationflags=CREATE_NO_WINDOW)
             socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", communication.internalPortClient, True)
             print("============TOR CLIENT SET==================")
         except:
@@ -359,22 +362,3 @@ def setWaitingOk(hashed_publicKey):
         return 0, 0
     except:
         print("========ERROR WHEN SET WAITING CONTACT=========")
-
-if __name__ == '__main__':
-    password = 'password'
-    text = 'message'
-
-    crypto = crypto()
-    encrypttext = crypto.encrypted(password, text)
-    print("The encrypted data is: ",encrypttext)
-    
-    decrypttext = crypto.decrypted(password, encrypttext)
-    print("The decrypted data is: ", decrypttext)
-    
-    print("Message : ", text)
-    
-    if text == decrypttext:
-        print("OK")
-        
-    else:
-        print("NOT")

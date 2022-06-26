@@ -857,7 +857,7 @@ class Ui_connexion(object):
 
     def retranslateUi(self, connexion):
         _translate = QtCore.QCoreApplication.translate
-        connexion.setWindowTitle(_translate("connexion", "Hermes - Secure messaging"))
+        connexion.setWindowTitle(_translate("connexion", "Hermes"))
         self.label_title.setText(_translate("connexion", "HERMES"))
         self.lineEdit_password_login.setPlaceholderText(_translate("connexion", "Password"))
         self.lineEdit_username_login.setPlaceholderText(_translate("connexion", "Username"))
@@ -881,14 +881,4 @@ class window(object):
         self.window.show()
         
 
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    connexion = QtWidgets.QMainWindow()
-    ui = Ui_connexion()
-    ui.setupUi(connexion)
-    connexion.show()
-    sys.exit(app.exec_())
-    
     

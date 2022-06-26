@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import QAction, QApplication, QListWidgetItem
 from PyQt5 import QtWidgets, QtCore, QtGui, QtTest
 from PyQt5.QtWidgets import *
 from threading import Thread
-from datetime import datetime as dt
 import tools
 import time
 import cgitb
@@ -332,8 +331,6 @@ class Ui_home(object):
         self.listWidget_contacts.clicked.connect(lambda _, s=self: showMessage.dataShowMessage(s))
         # show message from database
         self.listWidget_contacts.clicked.connect(lambda _, s=self: showMessage.showMessageDatabase(s))
-        # show send message
-        self.pushButton_Send_2.clicked.connect(lambda _, s=self: showMessage.ShowSendMessage(s))
         # send message
         self.pushButton_Send_2.clicked.connect(lambda _, s=self: showMessage.sendMessage(s))
         
@@ -405,11 +402,9 @@ class Ui_home(object):
                     print(decryptedMessage_date)
                     print(decryptedMessage_message)
 
-                    # Seulement les messages recu qu'on affiche
-                    if decryptedMessage_senderDirection != "send":
-                        # Fonction  affiche les nouveau messages
-                        showMessage.funShowUser(self, decryptedMessage_senderUsername, decryptedMessage_senderDirection)
-                        showMessage.funShowMessage(self, decryptedMessage_message, decryptedMessage_date, decryptedMessage_senderDirection)
+                    # Fonction  affiche les nouveau messages
+                    showMessage.funShowUser(self, decryptedMessage_senderUsername, decryptedMessage_senderDirection)
+                    showMessage.funShowMessage(self, decryptedMessage_message, decryptedMessage_date, decryptedMessage_senderDirection)
 
                     # Permet de quitter apres avoir afficher les nouveaux msg
                     i = i + 1
@@ -429,7 +424,7 @@ class Ui_home(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Hermes"))
         self.pushButton_Profil.setText(_translate("MainWindow", "Profil"))
         self.label_Title.setText(_translate("MainWindow", "Title"))
         self.pushButton_ListContact.setText(_translate("MainWindow", "List Contact"))
@@ -849,34 +844,3 @@ class showMessage(object):
 
         #except:
             #print("Pas de messages")
-
-    def ShowSendMessage(self):
-        conn = tools.sqlite3.connect('dataFile.db')
-        cursor = conn.cursor()
-        crypt = tools.crypto()
-
-        message = self.lineEdit_Message_2.text()
-
-        now = dt.now()
-        date = now.strftime("%d/%m/%Y %H:%M:%S")
-
-        cursor.execute(f"SELECT * FROM users WHERE user_id='{self.idUser}'")
-        rows = cursor.fetchall()
-        for row in rows:
-            userUsername = crypt.decrypted(tools.sharedPassword, row[1])
-
-        if message != "":
-            showMessage.funShowUser(self, userUsername, "send")
-            showMessage.funShowMessage(self, message, date, "send")
-
-
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    homeWindow = QtWidgets.QMainWindow()
-    ui = Ui_home()
-    ui.setupUi(homeWindow)
-    homeWindow.show()
-    sys.exit(app.exec_())
