@@ -17,6 +17,9 @@ import hashlib
 import pyaes
 from datetime import datetime as dt
 import re
+from pathlib import Path
+import secrets
+import os
 
 sharedPassword = ""
 userId = 0
@@ -25,7 +28,15 @@ sharedPublicKey = ""
 sharedOnionAddress = ""
 
 class crypto(object):
-    salt = binascii.unhexlify('7d34f60be198c7397de94885a7489390')
+    fle = Path('salt.txt')
+    fle.touch(exist_ok=True)
+    f = open(fle, 'w+')
+    if os.stat(fle).st_size == 0:
+        salt_file = secrets.token_hex(16)
+        f.write(salt_file)
+
+    salt = f.read()
+    f.close
 
     def encrypted(self, password, data):
         """
