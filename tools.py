@@ -28,6 +28,13 @@ class crypto(object):
     salt = binascii.unhexlify('7d34f60be198c7397de94885a7489390')
 
     def encrypted(self, password, data):
+        """
+        It takes a password and data, and returns the encrypted data
+        
+        :param password: The password to use for encryption
+        :param data: The data to be encrypted
+        :return: The encrypted data.
+        """
         try:
             print("===CHIFFREMENT EN COURS===")
             # key must be bytes, so we convert it
@@ -42,6 +49,13 @@ class crypto(object):
             print("===CHIFFREMENT ERREUR===")
 
     def decrypted(self, password, data):
+        """
+        The function takes a password and a data string as input, and returns the decrypted data string
+        
+        :param password: The password to use for encryption
+        :param data: The data to be encrypted
+        :return: The decrypted data
+        """
         print("===DECHIFFREMENT EN COURS===")
         try:
             # DECRYPTION
@@ -57,11 +71,25 @@ class crypto(object):
             print("===DECHIFFREMENT ERREUR===")
 
     def encrypt_RSA(self, pubKey, msg):
+        """
+        It encrypts the message using the public key.
+        
+        :param pubKey: The public key of the recipient
+        :param msg: The message to be encrypted
+        :return: The encrypted message.
+        """
         encryptor = PKCS1_OAEP.new(pubKey)
         encrypted = encryptor.encrypt(msg)
         return encrypted
 
     def decrypt_RSA(self, keyPair, encrypted):
+        """
+        It decrypts the encrypted message using the private key.
+        
+        :param keyPair: The RSA key pair to use for decryption
+        :param encrypted: The encrypted message
+        :return: The decrypted message.
+        """
         decryptor = PKCS1_OAEP.new(keyPair)
         decrypted = decryptor.decrypt(encrypted)
         return decrypted
@@ -80,6 +108,12 @@ class communication(object):
     externalPortServer = 13711
 
     def send(torAddress, message):
+        """
+        It sends a message to a tor address.
+        
+        :param torAddress: the address of the contact
+        :param message: b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        """
         print("========START SEND==========")
         try:
             socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", communication.internalPortClient, True)
@@ -102,6 +136,10 @@ class communication(object):
             print("=======SENDING MEMORY END=========")
 
     def retrySend():
+        """
+        It connects to the database, gets the data, decrypts it, and then sends it to the contact
+        address.
+        """
         print("========START RETRY SEND==========")
         while True:
             # Connection to the database
@@ -135,6 +173,11 @@ class communication(object):
             time.sleep(10)
 
     def listenMessage(socket):
+        """
+        The function listenMessage() is a function that listens for incoming messages from the client
+        
+        :param socket: the socket object
+        """
         try:
             userPrivateKey = ""
             CREATE_NO_WINDOW = 0x08000000
@@ -200,6 +243,12 @@ class communication(object):
             print("=========ERROR CHECK CODE========")
 
     def replyVerifContact(contactPublicKey, contactTorAddress):
+        """
+        ReplyVerifContact(contactPublicKey, contactTorAddress)
+        
+        :param contactPublicKey: The public key of the contact
+        :param contactTorAddress: the tor address of the contact
+        """
         print("============SEND REPLY VERIF CONTACT===========")
         try:
             # encrypt message
@@ -214,6 +263,13 @@ class communication(object):
             print("==========ERROR SEND REPLY VERIF CONTACT============")
 
     def receiveMessage(message, torAddress, userId):
+        """
+        It receives a message, the tor address of the sender and the user id of the receiver
+        
+        :param message: the message received
+        :param torAddress: the address of the sender
+        :param userId: 1
+        """
         print(message)
         print(torAddress)
         print(userId)
@@ -257,6 +313,14 @@ class communication(object):
         print(f"==========GET MESSAGE : {message}, from {torAddress}===========")
         
     def sendMessage(message, torAddress, userId):
+        """
+        It takes a message, a tor address, and a user id, and then it sends the message to the tor
+        address
+        
+        :param message: the message to be sent
+        :param torAddress: The onion address of the contact
+        :param userId: the id of the user who is sending the message
+        """
         # Connection to the database
         conn = sqlite3.connect(dataBase)
         cursor = conn.cursor()
@@ -296,6 +360,9 @@ class communication(object):
         communication.insertMessageDatabase(cryptedSenderDirection, message, crypted_userUsername, crypted_conversationId)
 
     def torClient():
+        """
+        It starts the tor client and sets the proxy to 127.0.0.1:internalPortClient
+        """
         try:
             print("=============START TOR CLIENT=================")
             CREATE_NO_WINDOW = 0x08000000
@@ -309,6 +376,14 @@ class communication(object):
             print("============ERROR WHEN TOR CLIENT STARTING============")
 
     def insertMessageDatabase(direction, message, username, conversation_id):
+        """
+        It inserts a message into a database.
+        
+        :param direction: 0 for incoming, 1 for outgoing
+        :param message: the message to be inserted
+        :param username: The username of the person who sent the message
+        :param conversation_id: The id of the conversation
+        """
         print("============INSERT MESSAGE IN DATABASE==================")
         # Connection to the database
         conn = sqlite3.connect(dataBase)
@@ -328,6 +403,13 @@ class communication(object):
         
 
 def getVerifContact(hashed_publicKey):
+    """
+    It takes a hashed public key as an argument, and then it calls the setWaitingOk function, which
+    returns a tor address and a public key. If the tor address is not 0, then it calls the
+    replyVerifContact function, which takes the public key and the tor address as arguments
+    
+    :param hashed_publicKey: the public key of the contact you want to verify
+    """
     print("==========GET VERIF CONTACT==========")
     try:
         torAdress, publicKey = setWaitingOk(hashed_publicKey)
@@ -338,6 +420,13 @@ def getVerifContact(hashed_publicKey):
         print("==========ERROR GET VERIF CONTACT============")
 
 def setWaitingOk(hashed_publicKey):
+    """
+    It takes a hashed public key as input, and returns the decrypted tor address and public key of the
+    contact with the same hashed public key
+    
+    :param hashed_publicKey: the public key of the contact, hashed with SHA256
+    :return: the decrypted torAddress and decrypted publicKey.
+    """
     print("=======SET WAITING TO 1=========")
     try:
         # verification du contact dans la bdd

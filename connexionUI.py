@@ -696,6 +696,11 @@ class Ui_connexion(object):
         self.lineEdit_password_login.returnPressed.connect(self.pushButton_login.click)
 
     def createAccount(self):
+        """
+        It creates a database with tables if they don't exist, then it creates a user with a username,
+        password, RSA key pair, and a Tor onion address.
+        :return: The return value is the number of rows that were inserted or updated.
+        """
         print("===========TENTATIVE CREATION UTILISATEUR===========")
         # Connection to the database
         conn = tools.sqlite3.connect('dataFile.db')
@@ -784,6 +789,12 @@ class Ui_connexion(object):
         print("===========CREATION REUSSITE===========\n")
 
     def connectAccount(self, connexion):
+        """
+        I'm trying to connect to a database, get the user's data, and then open a new window.
+        
+        :param connexion: the window that is currently open
+        :return: the value of the variable "idUser"
+        """
         print("===========TENTATIVE CONNEXION UTILISATEUR===========")
 
         # Connection to the database
@@ -851,11 +862,21 @@ class Ui_connexion(object):
         self.open.openHomeUI(idUser)
 
     def sleeper(i):
+        """
+        It prints a message, sleeps for 5 seconds, and then prints another message
+        
+        :param i: The number of the thread
+        """
         print("Le thread %d est en veille pendant 5 secondes" % i)
         time.sleep(5)
         print("Le tread %d s'est reveille" % i)
 
     def retranslateUi(self, connexion):
+        """
+        It translates the text of the widgets in the window
+        
+        :param connexion: the name of the window
+        """
         _translate = QtCore.QCoreApplication.translate
         connexion.setWindowTitle(_translate("connexion", "Hermes"))
         self.label_title.setText(_translate("connexion", "HERMES"))
@@ -872,8 +893,14 @@ class Ui_connexion(object):
         self.pushButton_register.setText(_translate("connexion", "Register"))
         self.lineEdit_username_register.setPlaceholderText(_translate("connexion", "Username"))
 
+# It's a class that opens a window
 class window(object):
     def openHomeUI(self, idUser):
+        """
+        It opens a new window (home.ui) and passes the idUser variable to it.
+        
+        :param idUser: the id of the user who is logged in
+        """
         print("============TENTATIVE OUVERTURE HOME.UI============")
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_home()

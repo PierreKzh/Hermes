@@ -371,6 +371,10 @@ class Ui_home(object):
         cgitb.enable(format = 'text')
 
     def showNewMessage(self):
+        """
+        It checks if there are new messages in the database, if there are, it decrypts them and displays
+        them
+        """
         print("==========SHOW USER (message)============")
         # bdd connexion
         i = 0
@@ -409,6 +413,13 @@ class Ui_home(object):
                     # Permet de quitter apres avoir afficher les nouveaux msg
                     i = i + 1
                     if i == (int(self.nbMessages) - int(self.previous_nbMessages)):
+                        """
+                        It takes a hashed public key as input, and returns the decrypted tor address and public key of the
+                        contact with the same hashed public key
+                        
+                        :param hashed_publicKey: the public key of the contact
+                        :return: the decrypted torAddress and decrypted publicKey.
+                        """
                         break
                 
                 self.previous_nbMessages = self.nbMessages
@@ -448,12 +459,19 @@ class BrowserHandler(QtCore.QObject):
     
     # method which will execute algorithm in another thread
     def run(self):
+        """
+        It emits a signal every 5 seconds, which is connected to a slot that updates the text and color
+        of a label.
+        """
         while True:
             # send signal with new text and color from aonther thread
             self.newMessage.emit()
             QtCore.QThread.msleep(5000)
 
 
+    """
+    It sets the current contact to the contact that is selected in the listWidget_contacts
+    """
 def setCurrentContact(self):
     """
     It sets the current contact to the contact that is selected in the listWidget_contacts.
@@ -470,6 +488,11 @@ def setCurrentContact(self):
         print("=========ERROR WHEN SET CURRENT CONTACT===========")
 
 def addContact(self):
+    """
+    It takes a username and an ID, checks if the ID is valid, checks if the user already exists, and if
+    not, adds the user to the database.
+    :return: the value of the variable "encrypted_wainting"
+    """
     print("===========add contact=============")
     try:
         # Connection to the database
@@ -548,7 +571,11 @@ def addContact(self):
     except:
         print("========ERROR ADD CONTACT========")
 
+
 def deleteContact(self):
+    """
+    It deletes a contact from the database and then displays the contacts in the listWidget.
+    """
     print("===========delete contact=============")
     try:
         if (self.listWidget_contacts.currentItem().text()[:9] == "[WAITING]"):
@@ -614,6 +641,9 @@ def displayListWidget_contacts(self):
         print("===========ERROR DISPLAY LIST CONTACT==========")
 
 def copyIdToClipboard(self):
+    """
+    I'm trying to copy a string to the clipboard
+    """
     cb = QApplication.clipboard()
     cb.clear(mode=cb.Clipboard)  # clear the clipboard
     id = f"{tools.sharedOnionAddress}{tools.sharedPublicKey}"  # id in clear text
@@ -624,6 +654,13 @@ def copyIdToClipboard(self):
     self.buttonCopyId.setText('copy ID')
 
 def sendVerifContact(torAddress, publicKey):
+    """
+    It sends a message to the other user, asking them to verify that they have the same public key as
+    the one that was sent to the user
+    
+    :param torAddress: The address of the contact you want to send the message to
+    :param publicKey: The public key of the contact
+    """
     print("============SEND VERIF CONTACT===========")
     try:
         # encrypt message
@@ -639,6 +676,9 @@ def sendVerifContact(torAddress, publicKey):
 
 class showMessage(object):
     def dataShowMessage(self):
+        """
+        I'm trying to get the number of messages in a conversation.
+        """
         print("==========DATA FOR SHOW MESSAGE============")
         # bdd connexion
         conn = tools.sqlite3.connect('dataFile.db')
@@ -692,9 +732,10 @@ class showMessage(object):
                         
 
     def sendMessage(self):
-        ##########################################################################
-        # A METTRE DANS UN THREAD SINON APPLI BLOQUE LE TEMPS DENVOIS DU MESSAGE #
-        ##########################################################################
+        """
+        It gets the contact's onion address and public key from the database, encrypts the message with
+        the public key, and sends the message to the onion address.
+        """
         try:
             message = self.lineEdit_Message_2.text()
             self.lineEdit_Message_2.setText("")
@@ -739,6 +780,13 @@ class showMessage(object):
             print("=============ERROR WHEN SENDING MESSAGE===============")
 
     def funShowMessage(self, message, date, sender):
+        """
+        It displays a message in a chat window.
+        
+        :param message: The message to be displayed
+        :param date: the date of the message
+        :param sender: The sender of the message
+        """
         print("==========SHOW MESSAGE (message)============")
         # Message Send
         self.message = QtWidgets.QLabel()
@@ -786,6 +834,12 @@ class showMessage(object):
             pass
 
     def funShowUser(self, username, sender):
+        """
+        It prints "==========SHOW USER (message)============"
+        
+        :param username: the username of the user
+        :param sender: "send" or "receive"
+        """
         print("==========SHOW USER (message)============")
         # Message Send
         self.username = QtWidgets.QLabel()
@@ -806,6 +860,9 @@ class showMessage(object):
         self.scroll_box.addLayout(hbox)
 
     def clearShowMessage(self):
+        """
+        It removes all the widgets from the scroll box.
+        """
         print("==========CLEAR DATABASE============")
         for i in reversed(range(self.scroll_box.count() - 1)):
             layout_item = self.scroll_box.itemAt(i + 1)
@@ -820,6 +877,10 @@ class showMessage(object):
             self.scroll_box.removeItem(layout_item)
 
     def showMessageDatabase(self):
+        """
+        It connects to a database, fetches all the rows from a table, decrypts the data, and then
+        displays it.
+        """
         print("==========SHOW MESSAGE FROM DATABASE============")
         # bdd connexion
         conn = tools.sqlite3.connect('dataFile.db')
